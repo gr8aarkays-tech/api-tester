@@ -1,0 +1,25 @@
+{
+  "name": "api-tester-backend",
+  "version": "1.0.0",
+  "description": "Backend proxy + DB layer for API Tester",
+  "main": "index.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "pg": "^8.11.3",
+    "mysql2": "^3.7.0",
+    "mssql": "^10.0.4",
+    "oracledb": "^6.4.0",
+    "better-sqlite3": "^9.4.3",
+    "axios": "^1.7.7",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  }
+}

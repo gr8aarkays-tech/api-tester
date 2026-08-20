@@ -1,0 +1,737 @@
+Create a modern, professional **web-based API testing and debugging tool**, inspired by tools such as **Insomnia, Postman, and SoapUI**.
+
+The application should allow QA engineers and developers to create, configure, execute, and validate API requests directly from the browser.
+
+## 1. Overall Layout
+
+Create a dark-themed desktop-first interface suitable for API testing.
+
+Use a layout similar to professional API clients:
+
+### Left Sidebar
+
+Display:
+
+* Workspaces / Projects
+* API Collections
+* Folders
+* Saved API requests
+* Environments
+* History
+* Mock Services
+
+Allow users to:
+
+* Create a new collection
+* Create folders
+* Add a new API request
+* Rename requests
+* Duplicate requests
+* Delete requests
+* Drag and drop requests/folders
+
+Example:
+
+```text
+Projects
+ └── My API Project
+      ├── Authentication
+      │    ├── Login
+      │    └── Refresh Token
+      ├── Users
+      │    ├── Get Users
+      │    ├── Get User
+      │    ├── Create User
+      │    └── Update User
+      └── Products
+           ├── Get Products
+           └── Create Product
+```
+
+## 2. Request Builder
+
+When an API request is selected, display a request builder.
+
+At the top provide:
+
+### HTTP Method Dropdown
+
+Support:
+
+* GET
+* POST
+* PUT
+* PATCH
+* DELETE
+* HEAD
+* OPTIONS
+
+Next to the method provide a large URL input:
+
+```text
+[ GET ▼ ] [ https://api.example.com/users                 ] [ Send ]
+```
+
+The **Send** button should execute the API request.
+
+Also provide:
+
+* Save
+* Duplicate
+* Clear
+* Format
+* Generate Code
+
+## 3. Request Configuration Tabs
+
+Below the URL, provide tabs:
+
+* Params
+* Authorization
+* Headers
+* Body
+* Cookies
+* Tests
+* Settings
+
+### Params
+
+Allow adding query parameters in a table:
+
+| Key   | Value | Description      | Enabled |
+| ----- | ----- | ---------------- | ------- |
+| page  | 1     | Page number      | ✓       |
+| limit | 10    | Records per page | ✓       |
+
+Automatically construct the final URL from enabled parameters.
+
+Example:
+
+```text
+https://api.example.com/users?page=1&limit=10
+```
+
+### Authorization
+
+Support:
+
+* No Auth
+* Basic Auth
+* Bearer Token
+* API Key
+* OAuth 2.0
+
+For security, sensitive values should be masked.
+
+Example:
+
+```text
+Authorization Type: Bearer Token
+
+Token:
+[ ******************************** ]
+
+[Show Token]
+```
+
+### Headers
+
+Provide an editable key/value table:
+
+```text
+Key                    Value
+------------------------------------------------
+Content-Type           application/json
+Accept                 application/json
+Authorization         Bearer {{token}}
+```
+
+Support environment variables such as:
+
+```text
+{{baseUrl}}
+{{token}}
+{{username}}
+```
+
+### Body
+
+Support:
+
+* None
+* JSON
+* XML
+* Form Data
+* x-www-form-urlencoded
+* Raw Text
+* Binary/File upload
+
+For JSON/XML provide a syntax-highlighted editor.
+
+Example:
+
+```json
+{
+  "name": "John",
+  "email": "john@example.com",
+  "age": 30
+}
+```
+
+Provide:
+
+* Format JSON
+* Minify
+* Copy
+* Clear
+
+## 4. Execute API Request
+
+When the user clicks **Send**:
+
+1. Validate the request
+2. Build the final URL
+3. Apply query parameters
+4. Apply authentication
+5. Apply headers
+6. Apply request body
+7. Execute the HTTP request
+8. Capture the response
+9. Display response details
+
+Show a loading indicator while the request is executing.
+
+Handle errors gracefully.
+
+Examples:
+
+```text
+Network Error
+Connection Timeout
+CORS Error
+Invalid URL
+Authentication Failed
+Server Error
+```
+
+## 5. Response Panel
+
+Create a large response panel below the request configuration.
+
+Display:
+
+```text
+Response
+
+Status: 200 OK
+Time: 245 ms
+Size: 4.2 KB
+```
+
+Use status colors appropriately:
+
+* 2xx – Success
+* 3xx – Redirect
+* 4xx – Client Error
+* 5xx – Server Error
+
+Provide response tabs:
+
+* Body
+* Headers
+* Cookies
+* Timeline
+* Test Results
+
+### Response Body
+
+If JSON is returned, automatically format and syntax-highlight it.
+
+Example:
+
+```json
+{
+  "status": "success",
+  "data": {
+    "id": 101,
+    "name": "John"
+  }
+}
+```
+
+Provide:
+
+* Pretty
+* Raw
+* Preview
+* Copy
+* Download
+* Search
+
+For XML responses, provide formatted XML.
+
+For plain text, display the raw response.
+
+For HTML responses, provide a preview option.
+
+## 6. Response Headers
+
+Display headers in a readable table:
+
+```text
+Header                 Value
+------------------------------------------------
+content-type           application/json
+content-length         1024
+server                 nginx
+cache-control           no-cache
+```
+
+## 7. Request History
+
+Maintain a request history.
+
+Display:
+
+```text
+History
+
+GET     /users
+POST    /login
+GET     /products
+DELETE  /users/101
+```
+
+Store:
+
+* Method
+* URL
+* Timestamp
+* Status
+* Response time
+
+Allow users to reopen a previous request.
+
+## 8. Environments
+
+Create an environment manager similar to professional API tools.
+
+Allow:
+
+```text
+Environment: Development
+
+baseUrl = https://dev.example.com
+username = testuser
+token = ********
+```
+
+Support multiple environments:
+
+* Local
+* Development
+* QA
+* UAT
+* Production
+
+Allow switching environments from the top navigation.
+
+Variables should be usable inside requests:
+
+```text
+{{baseUrl}}/users
+```
+
+## 9. API Collections
+
+Allow users to organize APIs into collections.
+
+Example:
+
+```text
+My Project
+
+Authentication
+   Login
+   Logout
+   Refresh Token
+
+Users
+   Get Users
+   Get User
+   Create User
+   Update User
+   Delete User
+
+Orders
+   Get Orders
+   Create Order
+```
+
+Each request should be persistable.
+
+## 10. API Testing / Assertions
+
+Provide a **Tests** tab.
+
+Allow users to define basic assertions against the response.
+
+Examples:
+
+```text
+Status code should equal 200
+
+Response body should contain "success"
+
+Response JSON field:
+data.id
+should not be empty
+```
+
+Support assertions such as:
+
+* Status code
+* Response time
+* Header exists
+* Header equals value
+* JSON field exists
+* JSON field equals value
+* JSON field contains value
+* Response contains text
+
+Display test results:
+
+```text
+✓ Status code is 200
+✓ Response contains "success"
+✓ data.id exists
+✗ Response time < 500 ms
+```
+
+## 11. API Import / Export
+
+Support importing APIs from:
+
+* OpenAPI / Swagger JSON
+* OpenAPI YAML
+* Postman Collection JSON
+* cURL commands
+
+Allow exporting collections.
+
+## 12. cURL Support
+
+Provide a **Generate cURL** option.
+
+Example:
+
+```bash
+curl --request GET \
+  --url 'https://api.example.com/users' \
+  --header 'Authorization: Bearer {{token}}'
+```
+
+Also allow:
+
+```text
+Import cURL
+```
+
+The application should parse a cURL command and automatically populate:
+
+* Method
+* URL
+* Headers
+* Query parameters
+* Body
+* Authentication
+
+## 13. Code Generation
+
+Provide a **Generate Code** feature.
+
+Allow generating API request code in:
+
+* cURL
+* JavaScript Fetch
+* JavaScript Axios
+* TypeScript
+* Python Requests
+* Java
+* C#
+* PowerShell
+
+Example:
+
+```javascript
+const response = await fetch(
+  'https://api.example.com/users',
+  {
+    method: 'GET',
+    headers: {
+      'Authorization': 'Bearer TOKEN'
+    }
+  }
+);
+```
+
+## 14. SOAP API Support
+
+Since this tool should also be useful as a SoapUI alternative, add SOAP support.
+
+Allow selecting:
+
+```text
+REST
+SOAP
+```
+
+For SOAP:
+
+* SOAP URL
+* SOAP Version
+* HTTP Headers
+* XML Request Body
+* Send Request
+* XML Response Viewer
+
+Example:
+
+```xml
+<soap:Envelope>
+    <soap:Body>
+        ...
+    </soap:Body>
+</soap:Envelope>
+```
+
+Provide XML formatting and syntax highlighting.
+
+## 15. Request Tabs
+
+Allow multiple API requests to be open simultaneously.
+
+Example:
+
+```text
+[ Login ] [ Get Users ] [ Create User ] [ Get Orders ] [+]
+```
+
+Users should be able to switch between requests without losing unsaved changes.
+
+## 16. Keyboard Shortcuts
+
+Support useful shortcuts:
+
+```text
+Ctrl + Enter     Send Request
+Ctrl + S         Save Request
+Ctrl + K         Search
+Ctrl + N         New Request
+```
+
+Display keyboard shortcuts in tooltips.
+
+## 17. Search
+
+Provide global search for:
+
+* Requests
+* Collections
+* URLs
+* Headers
+* Request names
+
+## 18. UI/UX Requirements
+
+Use a clean professional developer-tool interface.
+
+Design characteristics:
+
+* Dark theme
+* Compact controls
+* Clear typography
+* Syntax highlighting
+* Resizable panels
+* Responsive layout
+* Minimal unnecessary whitespace
+* Professional API-client appearance
+* Clear visual separation between request and response
+
+Allow the user to resize:
+
+```text
+Left Sidebar
+     ↕
+Request Panel
+     ↕
+Response Panel
+```
+
+## 19. Important Security Requirements
+
+Do not expose sensitive credentials unnecessarily.
+
+* Mask passwords and tokens
+* Never display secrets in plain text unless explicitly requested
+* Store credentials securely
+* Avoid logging authorization headers
+* Warn users before sending credentials to external APIs
+
+## 20. Error Handling
+
+Provide useful errors instead of generic messages.
+
+For example:
+
+```text
+Request Failed
+
+Reason:
+CORS policy blocked this request.
+
+Possible solutions:
+• Configure the target API to allow this origin
+• Use the backend proxy
+• Run the API through a permitted environment
+```
+
+The application should clearly distinguish between:
+
+* HTTP errors
+* Network errors
+* CORS errors
+* Timeout errors
+* Invalid request errors
+* Authentication errors
+
+## 21. Backend / Proxy Architecture
+
+Because browser applications can be blocked by CORS, design the application with an optional backend API proxy.
+
+Architecture:
+
+```text
+Browser UI
+    ↓
+API Testing Frontend
+    ↓
+Backend Proxy
+    ↓
+Target API
+```
+
+The backend proxy should execute requests on behalf of the browser when required.
+
+Allow configuration of:
+
+```text
+Direct Request
+Proxy Request
+```
+
+## 22. Persistence
+
+Persist:
+
+* Collections
+* Requests
+* Environments
+* History
+* Settings
+
+For the initial version, local browser storage such as IndexedDB/localStorage can be used.
+
+Design the application so that a database can be added later.
+
+## 23. Dashboard
+
+Create a simple home/dashboard page showing:
+
+```text
+API Testing Dashboard
+
+Collections       8
+Saved Requests   124
+Environments      4
+Recent Requests   15
+
+[ + New Request ]
+
+Recent Requests
+--------------------------------
+GET     /users          200
+POST    /login          200
+GET     /products       404
+DELETE  /users/10       204
+```
+
+## 24. Technology
+
+Build this as a modern web application using:
+
+* React
+* TypeScript
+* Modern CSS / Tailwind CSS
+* Component-based architecture
+* Monaco Editor or another professional code editor
+* REST API client
+* JSON/XML syntax highlighting
+
+Use clean, maintainable, modular code.
+
+Separate the application into logical components:
+
+```text
+components/
+  Sidebar
+  RequestBuilder
+  ResponseViewer
+  HeaderEditor
+  ParamsEditor
+  BodyEditor
+  AuthEditor
+  TestEditor
+  EnvironmentManager
+  CollectionManager
+  HistoryPanel
+
+services/
+  apiClient
+  proxyClient
+  environmentService
+  storageService
+
+utils/
+  jsonFormatter
+  xmlFormatter
+  curlParser
+  codeGenerator
+```
+
+## 25. Important Requirement
+
+This should **not be just a static UI prototype**.
+
+The application should actually be capable of:
+
+1. Entering an API URL
+2. Selecting HTTP method
+3. Adding parameters
+4. Adding headers
+5. Adding authentication
+6. Entering request body
+7. Sending the request
+8. Receiving the actual response
+9. Showing status code
+10. Showing response time
+11. Showing response headers
+12. Formatting JSON/XML
+13. Saving requests
+14. Maintaining history
+15. Managing environments
+16. Running basic API tests
+
+Make the first version fully functional with **GET, POST, PUT, PATCH, and DELETE** requests.
+
+The final result should feel like a lightweight combination of **Insomnia + Postman + SoapUI**, but with a simpler and cleaner interface focused specifically on API testing.

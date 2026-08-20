@@ -1,0 +1,626 @@
+## Add Feature: Regenerate New Test Data
+
+Add a **Regenerate Data** feature to the existing API testing and database testing application.
+
+The purpose of this feature is to allow the user to trigger an existing test-data generation file/request and generate a **completely new set of test data while preserving all the existing conditions, rules, constraints, relationships, and data types**.
+
+The user should NOT need to manually modify the existing conditions.
+
+### 1. Regenerate Data Button
+
+Add a prominent button:
+
+```text
+[ 🔄 Regenerate Data ]
+```
+
+Place it near the existing test-data generation/execution controls.
+
+When the user clicks the button:
+
+```text
+Existing Dataset
+       ↓
+Read Existing Conditions
+       ↓
+Preserve Rules & Constraints
+       ↓
+Generate New Values
+       ↓
+Validate Generated Data
+       ↓
+Display New Dataset
+```
+
+### 2. Preserve Existing Conditions
+
+This is the most important requirement.
+
+When regenerating data, the application must preserve:
+
+* Field names
+* Data types
+* Mandatory/optional fields
+* Min/max values
+* Allowed values
+* Regex patterns
+* Length restrictions
+* Formats
+* Relationships between fields
+* Business rules
+* Database constraints
+* Dependency rules
+* API requirements
+* Existing schema
+* Existing validation rules
+
+Only the **data values** should change unless the user explicitly asks to change the conditions.
+
+### 3. Example
+
+Existing dataset:
+
+```json
+{
+  "customerId": "C10001",
+  "age": 32,
+  "country": "India",
+  "status": "ACTIVE",
+  "accountType": "PREMIUM",
+  "amount": 25000
+}
+```
+
+Existing conditions:
+
+```text
+customerId:
+  Format = C + 5 digits
+
+age:
+  Range = 25–45
+
+country:
+  Allowed = India
+
+status:
+  Allowed = ACTIVE, INACTIVE
+
+accountType:
+  Allowed = BASIC, PREMIUM
+
+amount:
+  Range = 10,000–50,000
+
+Rule:
+  PREMIUM customers must have amount >= 20,000
+```
+
+After clicking:
+
+```text
+[ 🔄 Regenerate Data ]
+```
+
+generate something like:
+
+```json
+{
+  "customerId": "C48372",
+  "age": 41,
+  "country": "India",
+  "status": "ACTIVE",
+  "accountType": "PREMIUM",
+  "amount": 38750
+}
+```
+
+The values are different, but every existing condition is still satisfied.
+
+### 4. Generate Multiple New Records
+
+Allow the user to specify the number of records.
+
+Provide:
+
+```text
+Number of Records:
+[ 10 ▼ ]
+
+[ 🔄 Regenerate Data ]
+```
+
+Support:
+
+* 1
+* 5
+* 10
+* 50
+* 100
+* 500
+* Custom number
+
+Example:
+
+```text
+Generate 100 new records
+```
+
+The application should generate 100 different records using the same rules.
+
+### 5. Avoid Duplicate Data
+
+By default, newly generated records should be different from the existing dataset.
+
+Provide an option:
+
+```text
+☑ Avoid duplicates
+```
+
+When enabled:
+
+```text
+Existing Data
+     +
+New Generated Data
+     ↓
+Check for duplicates
+     ↓
+Regenerate conflicting records
+```
+
+The system should automatically regenerate a record if it conflicts with an existing unique value.
+
+### 6. Unique Fields
+
+Allow fields to be marked as:
+
+```text
+☑ Unique
+```
+
+Example:
+
+```text
+customerId = Unique
+email      = Unique
+phone      = Unique
+```
+
+When generating new data, these fields must not duplicate existing records.
+
+### 7. Preserve Relationships
+
+The regeneration engine must understand relationships between fields.
+
+For example:
+
+```text
+If accountType = PREMIUM
+then amount >= 20,000
+```
+
+or:
+
+```text
+startDate < endDate
+```
+
+or:
+
+```text
+dateOfBirth must result in age between 25 and 45
+```
+
+or:
+
+```text
+country = India
+then phoneNumber must follow Indian phone format
+```
+
+When generating a new dataset, all dependent values must be regenerated consistently.
+
+Do NOT generate each field independently when fields have dependencies.
+
+### 8. Regenerate One Record
+
+Allow the user to regenerate an individual record.
+
+Example:
+
+```text
+| ID | Name | Age | Status | Amount | Action |
+|----|------|-----|--------|--------|--------|
+| 1  | John | 32  | ACTIVE | 25000  | 🔄 |
+| 2  | David| 41  | ACTIVE | 38000  | 🔄 |
+| 3  | Robert| 29 | ACTIVE | 21000  | 🔄 |
+```
+
+Clicking the 🔄 button for record 2 should regenerate **only record 2**, while maintaining all applicable rules.
+
+### 9. Regenerate Individual Field
+
+Also provide an option to regenerate a single field where possible.
+
+Example:
+
+```text
+Customer ID     C10001     🔄
+Customer Name   John       🔄
+Age             32         🔄
+Email           john@test.com 🔄
+```
+
+However, if the field has dependencies, regenerate the dependent fields automatically.
+
+For example:
+
+```text
+Age
+ ↓
+Date of Birth
+```
+
+Changing Age may require Date of Birth to be regenerated.
+
+### 10. Preview Before Applying
+
+Before replacing the existing dataset, show a preview.
+
+Example:
+
+```text
+Regenerate Data
+
+Existing Records: 10
+New Records: 10
+
+Conditions preserved: ✓
+Unique constraints: ✓
+Business rules: ✓
+Relationships: ✓
+
+[Cancel]    [Generate Preview]
+```
+
+Then display:
+
+```text
+Old Value              New Value
+
+C10001                 C74821
+John                    Michael
+32                      38
+ACTIVE                  ACTIVE
+PREMIUM                 PREMIUM
+25000                   34750
+```
+
+Buttons:
+
+```text
+[Cancel]
+[Apply New Dataset]
+```
+
+### 11. Validation After Generation
+
+Every generated dataset must be validated before being accepted.
+
+Run:
+
+```text
+Schema Validation
+      ↓
+Data Type Validation
+      ↓
+Range Validation
+      ↓
+Format Validation
+      ↓
+Unique Validation
+      ↓
+Relationship Validation
+      ↓
+Business Rule Validation
+```
+
+Display:
+
+```text
+Generation Result
+
+✓ 100 records generated
+✓ 100 records passed validation
+✓ 0 duplicate records
+✓ All business rules satisfied
+```
+
+If any record fails:
+
+```text
+⚠ 3 records failed validation
+
+Automatically regenerate failed records.
+```
+
+Do not return invalid records unless the user explicitly chooses to keep them.
+
+### 12. Seed / Repeatable Generation
+
+Add an optional seed value:
+
+```text
+Random Seed:
+[ Auto ]
+```
+
+Support:
+
+```text
+Auto
+12345
+98765
+```
+
+If the same seed and conditions are used, the application should be capable of reproducing the same dataset.
+
+This is useful for debugging and regression testing.
+
+### 13. Data Generation Modes
+
+Provide:
+
+```text
+Generation Mode:
+
+○ Random
+○ Unique
+○ Sequential
+○ Boundary
+○ Negative
+○ Mixed
+```
+
+Examples:
+
+**Random**
+
+Generate normal random values within the allowed conditions.
+
+**Unique**
+
+Ensure generated values are unique.
+
+**Boundary**
+
+Generate values near:
+
+* Minimum
+* Maximum
+* Minimum - 1
+* Maximum + 1 where applicable
+
+**Negative**
+
+Generate invalid data intentionally for negative API testing while clearly marking which rule is being violated.
+
+**Mixed**
+
+Generate a combination of valid and invalid records.
+
+### 14. Regenerate from Existing File
+
+If the user has uploaded or selected a test-data file, support:
+
+```text
+File:
+customer-test-data.json
+
+[View Conditions]
+
+[ 🔄 Regenerate Data ]
+```
+
+The application should analyze the existing file and determine the data structure/conditions.
+
+For example:
+
+```text
+Detected:
+
+Fields: 12
+Required: 9
+Optional: 3
+Unique fields: 2
+Enums: 4
+Numeric ranges: 3
+Date fields: 2
+Relationships: 5
+```
+
+Then generate a new dataset following the same structure and conditions.
+
+### 15. Supported File Formats
+
+Support:
+
+* JSON
+* CSV
+* XML
+* Excel/XLSX
+
+For JSON:
+
+```json
+{
+  "customer": {
+    "id": "C10001",
+    "name": "John",
+    "age": 32
+  }
+}
+```
+
+The regenerated JSON must retain the same structure.
+
+For CSV/Excel:
+
+```text
+Customer ID | Name | Age | Status | Amount
+```
+
+retain the same columns and generate new values.
+
+### 16. Keep Existing Dataset
+
+Never immediately destroy the previous dataset.
+
+Maintain:
+
+```text
+Dataset Versions
+
+Version 1
+Version 2
+Version 3
+```
+
+Allow:
+
+```text
+[View]
+[Restore]
+[Compare]
+```
+
+Example:
+
+```text
+Version 1 → Original Dataset
+Version 2 → Regenerated Dataset
+Version 3 → Regenerated Dataset
+```
+
+### 17. Compare Datasets
+
+Add:
+
+```text
+[Compare with Previous Dataset]
+```
+
+Show:
+
+```text
+Field              Previous       New
+------------------------------------------------
+Customer ID        C10001         C84721
+Name               John           Michael
+Age                32             38
+Status             ACTIVE         ACTIVE
+Amount             25000          36750
+```
+
+Clearly indicate:
+
+```text
+Conditions: SAME
+Values: DIFFERENT
+```
+
+### 18. API Integration
+
+The regenerated data should be immediately usable in the existing API testing workflow.
+
+Example:
+
+```text
+Generate Data
+      ↓
+Save Dataset
+      ↓
+Select API Request
+      ↓
+Map Dataset Fields
+      ↓
+Populate API Request
+      ↓
+Send API
+```
+
+Example API body:
+
+```json
+{
+  "customerId": "{{data.customerId}}",
+  "name": "{{data.name}}",
+  "age": "{{data.age}}",
+  "amount": "{{data.amount}}"
+}
+```
+
+After regeneration, these variables should automatically point to the new dataset.
+
+### 19. File-Level Trigger
+
+For every saved test-data file/request, add:
+
+```text
+▶ Run
+🔄 Regenerate Data
+✎ Edit
+📋 Duplicate
+🗑 Delete
+```
+
+The **Regenerate Data** action should operate specifically on that file and preserve its existing conditions.
+
+Example:
+
+```text
+Test Data
+├── Customer.json
+│    ▶ Run
+│    🔄 Regenerate
+│
+├── Order.json
+│    ▶ Run
+│    🔄 Regenerate
+│
+└── Product.json
+     ▶ Run
+     🔄 Regenerate
+```
+
+### 20. Important Principle
+
+The feature must follow this rule:
+
+```text
+SAME SCHEMA
+     +
+SAME CONDITIONS
+     +
+SAME CONSTRAINTS
+     +
+SAME RELATIONSHIPS
+     +
+NEW VALUES
+     =
+NEW VALID DATASET
+```
+
+Do NOT simply randomize every field independently.
+
+The generated data must remain logically consistent and valid according to the conditions already present in the selected file/dataset.
+
+The user should be able to click:
+
+```text
+🔄 Regenerate Data
+```
+
+and immediately get a **fresh, valid, non-duplicate dataset using exactly the same conditions as the original data**.

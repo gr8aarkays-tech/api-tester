@@ -1,0 +1,913 @@
+Enhance the existing API testing web application by adding a **Database Integration and Dynamic Test Data** feature.
+
+The goal is to allow users to connect to a database, execute SQL queries, retrieve values, and automatically use those values inside API requests.
+
+The application should work like:
+
+```text
+Database
+   ↓
+SQL Query
+   ↓
+Query Result
+   ↓
+Map Database Columns to Variables
+   ↓
+API Request JSON
+   ↓
+Send API
+   ↓
+API Response
+```
+
+Do NOT redesign or replace the existing API testing functionality. Add this as a new integrated feature while keeping the current UI and workflow intact.
+
+# 1. Add "Database" Section
+
+Add a new section in the left navigation:
+
+```text
+Projects
+Collections
+Environments
+Database Connections
+Query Library
+History
+```
+
+Add a **Database Connections** page.
+
+Provide:
+
+```text
++ New Database Connection
+```
+
+# 2. Database Connection Manager
+
+Allow users to create and save database connections.
+
+Supported database types should include:
+
+* PostgreSQL
+* MySQL
+* Oracle
+* Microsoft SQL Server
+* SQLite
+
+The connection form should contain:
+
+```text
+Connection Name
+Database Type
+Host
+Port
+Database / Service Name
+Username
+Password
+Schema
+```
+
+For example:
+
+```text
+Connection Name: QA Database
+Database Type: Oracle
+Host: db.example.com
+Port: 1521
+Service Name: QA
+Username: test_user
+Password: ********
+Schema: CUSTOMER
+```
+
+Provide buttons:
+
+```text
+[Test Connection]
+[Save Connection]
+[Cancel]
+```
+
+Display connection status:
+
+```text
+✓ Connection successful
+
+or
+
+✗ Connection failed
+Reason: Invalid credentials
+```
+
+# 3. Security
+
+Database credentials must NEVER be exposed in the browser frontend.
+
+Use a backend service for database communication.
+
+Architecture:
+
+```text
+Web UI
+   ↓
+Backend API
+   ↓
+Database
+```
+
+The frontend should never directly establish database connections.
+
+Passwords and sensitive connection details should be encrypted or securely stored.
+
+Never display passwords in logs.
+
+Never send database credentials to the target API.
+
+# 4. Database Query Editor
+
+Add a SQL Query Editor.
+
+Example:
+
+```sql
+SELECT
+    CUSTOMER_ID,
+    CUSTOMER_NAME,
+    EMAIL,
+    PHONE
+FROM CUSTOMER
+WHERE STATUS = 'ACTIVE'
+```
+
+Use a professional SQL editor with:
+
+* Syntax highlighting
+* SQL formatting
+* Auto indentation
+* Copy
+* Clear
+* Run Query
+
+Buttons:
+
+```text
+[Run Query] [Format SQL] [Save Query]
+```
+
+# 5. Query Results
+
+After executing the query, display the results in a table.
+
+Example:
+
+| CUSTOMER_ID | CUSTOMER_NAME | EMAIL                                   | PHONE      |
+| ----------- | ------------- | --------------------------------------- | ---------- |
+| 10001       | John          | [john@test.com](mailto:john@test.com)   | 9876543210 |
+| 10002       | David         | [david@test.com](mailto:david@test.com) | 9876543211 |
+
+Display:
+
+```text
+Rows returned: 2
+Execution time: 142 ms
+```
+
+Allow:
+
+* Copy
+* Export JSON
+* Export CSV
+* Refresh
+* Select row
+
+# 6. Database Variables
+
+This is the most important feature.
+
+Allow users to convert database query results into variables.
+
+For example, query:
+
+```sql
+SELECT
+    CUSTOMER_ID,
+    CUSTOMER_NAME,
+    EMAIL
+FROM CUSTOMER
+WHERE STATUS = 'ACTIVE'
+FETCH FIRST 1 ROW ONLY
+```
+
+returns:
+
+```json
+{
+  "CUSTOMER_ID": 10001,
+  "CUSTOMER_NAME": "John",
+  "EMAIL": "john@test.com"
+}
+```
+
+Automatically expose variables:
+
+```text
+{{db.CUSTOMER_ID}}
+{{db.CUSTOMER_NAME}}
+{{db.EMAIL}}
+```
+
+# 7. Use Database Values in API Request
+
+Allow database variables to be used anywhere in an API request.
+
+Example URL:
+
+```text
+https://api.example.com/customer/{{db.CUSTOMER_ID}}
+```
+
+Example query parameter:
+
+```text
+customerId = {{db.CUSTOMER_ID}}
+```
+
+Example header:
+
+```text
+X-Customer-ID = {{db.CUSTOMER_ID}}
+```
+
+Example JSON body:
+
+```json
+{
+  "customerId": "{{db.CUSTOMER_ID}}",
+  "customerName": "{{db.CUSTOMER_NAME}}",
+  "email": "{{db.EMAIL}}"
+}
+```
+
+Before sending the API request, resolve the variables.
+
+Display a preview:
+
+```text
+Template:
+
+{
+  "customerId": "{{db.CUSTOMER_ID}}",
+  "email": "{{db.EMAIL}}"
+}
+
+Resolved:
+
+{
+  "customerId": "10001",
+  "email": "john@test.com"
+}
+```
+
+Provide:
+
+```text
+[Show Resolved Request]
+```
+
+# 8. Multiple Rows / Data-Driven Testing
+
+Support multiple rows from a database query.
+
+Example:
+
+```sql
+SELECT CUSTOMER_ID, CUSTOMER_NAME
+FROM CUSTOMER
+WHERE STATUS = 'ACTIVE'
+```
+
+Results:
+
+```text
+10001 | John
+10002 | David
+10003 | Robert
+```
+
+Allow the user to select:
+
+```text
+Execution Mode:
+
+○ First Row
+○ Selected Row
+○ All Rows
+```
+
+If **All Rows** is selected, allow the API request to execute once for every database row.
+
+Example:
+
+```text
+Database rows: 3
+
+API executions:
+
+Iteration 1 → CUSTOMER_ID = 10001 → 200
+Iteration 2 → CUSTOMER_ID = 10002 → 200
+Iteration 3 → CUSTOMER_ID = 10003 → 400
+```
+
+Display a test execution summary:
+
+```text
+Total: 3
+Passed: 2
+Failed: 1
+```
+
+# 9. Database Variable Panel
+
+Add a small panel in the API request screen:
+
+```text
+Database Variables
+
+Connection:
+[ QA Database ▼ ]
+
+Query:
+[ Get Active Customer ▼ ]
+
+Available Variables:
+
+{{db.CUSTOMER_ID}}
+{{db.CUSTOMER_NAME}}
+{{db.EMAIL}}
+{{db.PHONE}}
+```
+
+Allow users to click a variable to insert it into:
+
+* URL
+* Params
+* Headers
+* Body
+* Tests
+
+# 10. Query Library
+
+Add a **Query Library**.
+
+Users can save frequently used SQL queries.
+
+Example:
+
+```text
+Query Library
+
+Customer
+ ├── Get Customer
+ ├── Get Active Customer
+ └── Get Customer By Email
+
+Orders
+ ├── Get Order
+ └── Get Active Orders
+
+Users
+ ├── Get User
+ └── Get Active User
+```
+
+Each query should contain:
+
+```text
+Query Name
+Database Connection
+SQL Query
+Description
+Created By
+Last Modified
+```
+
+# 11. Query Parameters
+
+Allow SQL queries to use variables.
+
+Example:
+
+```sql
+SELECT *
+FROM CUSTOMER
+WHERE CUSTOMER_ID = {{customerId}}
+```
+
+When running the query, show:
+
+```text
+customerId:
+[ 10001 ]
+```
+
+Also allow API values to be passed into database queries.
+
+Example:
+
+```text
+API Request
+    ↓
+Extract customerId
+    ↓
+Database Query
+    ↓
+Retrieve customer information
+    ↓
+Use result in next API request
+```
+
+# 12. API → Database → API Workflow
+
+Add support for chained API/database workflows.
+
+Example:
+
+```text
+Step 1
+GET /customer
+
+      ↓
+
+Extract customerId
+
+      ↓
+
+Step 2
+Database Query
+
+SELECT *
+FROM CUSTOMER
+WHERE CUSTOMER_ID = {{customerId}}
+
+      ↓
+
+Step 3
+POST /customer/update
+
+{
+   "id": "{{db.CUSTOMER_ID}}",
+   "name": "{{db.CUSTOMER_NAME}}"
+}
+```
+
+Create a simple visual workflow:
+
+```text
+[API Request]
+      ↓
+[Extract Variable]
+      ↓
+[Database Query]
+      ↓
+[Set Variables]
+      ↓
+[API Request]
+```
+
+# 13. Response → Database Validation
+
+Also support validating API responses against database values.
+
+Example:
+
+API response:
+
+```json
+{
+  "customerId": 10001,
+  "status": "ACTIVE"
+}
+```
+
+Database:
+
+```sql
+SELECT CUSTOMER_ID, STATUS
+FROM CUSTOMER
+WHERE CUSTOMER_ID = 10001
+```
+
+Allow a test such as:
+
+```text
+API customerId == DB CUSTOMER_ID
+API status == DB STATUS
+```
+
+Display:
+
+```text
+✓ customerId matches database
+✓ status matches database
+```
+
+# 14. Database Assertion Builder
+
+Add a database assertion feature in the Tests tab.
+
+Example:
+
+```text
+Database Validation
+
+Connection:
+QA Database
+
+Query:
+SELECT STATUS
+FROM CUSTOMER
+WHERE CUSTOMER_ID = {{db.CUSTOMER_ID}}
+
+Expected:
+ACTIVE
+```
+
+Support:
+
+* Equals
+* Not Equals
+* Contains
+* Not Empty
+* Greater Than
+* Less Than
+* Row Count
+* JSON field vs DB column comparison
+
+# 15. Environment-Based Database Connections
+
+Database connections should support environments.
+
+Example:
+
+```text
+Environment: QA
+
+API:
+{{baseUrl}} = https://qa.example.com
+
+Database:
+{{dbConnection}} = QA Database
+```
+
+Switching to UAT should automatically use:
+
+```text
+UAT API
++
+UAT Database
+```
+
+Do not require users to manually change every request.
+
+# 16. Variable Resolution Priority
+
+Implement a clear variable hierarchy.
+
+For example:
+
+```text
+1. Local Request Variables
+2. Database Variables
+3. Environment Variables
+4. Global Variables
+```
+
+If the same variable name exists at multiple levels, clearly show which value is being used.
+
+Provide a variable inspector:
+
+```text
+Variable:
+customerId
+
+Value:
+10001
+
+Source:
+Database
+
+Query:
+Get Active Customer
+```
+
+# 17. Data Preview
+
+Before executing the API request, provide:
+
+```text
+Request Data Preview
+```
+
+Example:
+
+```text
+Database Values
+
+CUSTOMER_ID    = 10001
+CUSTOMER_NAME  = John
+EMAIL          = john@test.com
+
+Resolved API Request
+
+POST https://api.example.com/customer
+
+{
+   "customerId": "10001",
+   "name": "John",
+   "email": "john@test.com"
+}
+```
+
+Buttons:
+
+```text
+[Send Request]
+[Cancel]
+```
+
+# 18. Database Query Execution History
+
+Maintain database query history.
+
+Display:
+
+```text
+Query History
+
+Get Active Customer
+QA Database
+12:42 PM
+2 rows
+148 ms
+
+Get Order
+QA Database
+12:35 PM
+1 row
+91 ms
+```
+
+Allow users to reopen and rerun queries.
+
+# 19. Error Handling
+
+Provide meaningful database errors.
+
+Examples:
+
+```text
+Connection Timeout
+
+Database authentication failed
+
+SQL syntax error
+
+Table does not exist
+
+Column does not exist
+
+Permission denied
+
+Query execution timeout
+
+No records found
+```
+
+For "No records found":
+
+```text
+⚠ Query returned no records.
+
+The API request cannot continue because
+required database variables are unavailable.
+```
+
+# 20. API Request Execution Modes
+
+Add a setting:
+
+```text
+Database Data Mode
+
+○ Manual
+○ Fetch Before Request
+○ Fetch Once Per Session
+○ Fetch For Every Request
+○ Data Driven
+```
+
+Example:
+
+**Fetch Before Request**
+
+```text
+Database Query
+      ↓
+Resolve Variables
+      ↓
+API Request
+```
+
+**Data Driven**
+
+```text
+DB Row 1 → API Request
+DB Row 2 → API Request
+DB Row 3 → API Request
+```
+
+# 21. UI Integration
+
+Do not make database functionality feel like a separate application.
+
+Integrate it naturally into the existing API request builder.
+
+Add a new tab:
+
+```text
+Params
+Authorization
+Headers
+Body
+Database
+Tests
+Settings
+```
+
+The Database tab should contain:
+
+```text
+Database Connection
+[ QA Database ▼ ]
+
+Query
+[ Get Active Customer ▼ ]
+
+[Run Query]
+
+Variables
+
+CUSTOMER_ID       {{db.CUSTOMER_ID}}
+CUSTOMER_NAME     {{db.CUSTOMER_NAME}}
+EMAIL             {{db.EMAIL}}
+
+[Insert Variable]
+```
+
+# 22. Architecture
+
+Use a secure architecture:
+
+```text
+                ┌──────────────────────┐
+                │      Web Browser     │
+                │                      │
+                │ API Testing UI       │
+                │ Database UI          │
+                └──────────┬───────────┘
+                           │
+                           ▼
+                ┌──────────────────────┐
+                │      Backend API     │
+                │                      │
+                │ API Proxy            │
+                │ DB Connection Layer  │
+                │ Query Engine         │
+                │ Variable Resolver    │
+                └───────┬───────┬──────┘
+                        │       │
+              ┌─────────┘       └─────────┐
+              ▼                           ▼
+       Target REST/SOAP API          Database
+```
+
+Keep database drivers and credentials on the backend.
+
+# 23. Example End-to-End Scenario
+
+The application should support this complete workflow:
+
+### Step 1 – Query Database
+
+```sql
+SELECT
+    CUSTOMER_ID,
+    CUSTOMER_NAME,
+    EMAIL
+FROM CUSTOMER
+WHERE STATUS = 'ACTIVE'
+FETCH FIRST 1 ROW ONLY
+```
+
+### Step 2 – Result
+
+```json
+{
+  "CUSTOMER_ID": 10001,
+  "CUSTOMER_NAME": "John",
+  "EMAIL": "john@test.com"
+}
+```
+
+### Step 3 – Variables
+
+Automatically create:
+
+```text
+{{db.CUSTOMER_ID}}
+{{db.CUSTOMER_NAME}}
+{{db.EMAIL}}
+```
+
+### Step 4 – API Request
+
+```text
+POST https://api.example.com/customer
+```
+
+Body:
+
+```json
+{
+  "customerId": "{{db.CUSTOMER_ID}}",
+  "name": "{{db.CUSTOMER_NAME}}",
+  "email": "{{db.EMAIL}}"
+}
+```
+
+### Step 5 – Resolve
+
+```json
+{
+  "customerId": "10001",
+  "name": "John",
+  "email": "john@test.com"
+}
+```
+
+### Step 6 – Send API
+
+Execute the API request.
+
+### Step 7 – Validate Response
+
+Compare API response against database values.
+
+```text
+✓ Customer ID matches
+✓ Customer name matches
+✓ Email matches
+✓ API status = 200
+```
+
+# 24. Important Implementation Requirement
+
+Build this as a **fully functional feature**, not just a visual mockup.
+
+Start with:
+
+1. Database connection management
+2. PostgreSQL + MySQL + Oracle support
+3. Secure backend database connectivity
+4. SQL editor
+5. Execute SQL
+6. Display query results
+7. Convert result columns into variables
+8. Use variables inside API URL/body/headers/params
+9. Database → API workflow
+10. API → Database validation
+11. Multiple-row data-driven execution
+12. Query history
+13. Saved queries
+14. Environment-specific database connections
+
+Keep the existing API testing functionality working exactly as it does today.
+
+The final application should become a lightweight **API + Database Testing platform**, allowing QA engineers to perform:
+
+```text
+Database Setup
+      ↓
+Fetch Test Data
+      ↓
+API Request
+      ↓
+API Response
+      ↓
+Database Validation
+      ↓
+Test Result
+```
+
+The architecture should be extensible so that additional databases, advanced assertions, test suites, scheduled execution, and CI/CD integration can be added later.

@@ -1,0 +1,158 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: #1a1b1e;
+  color: #c9d1d9;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: 13px;
+  overflow: hidden;
+  height: 100vh;
+}
+
+#root {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #25262b;
+}
+::-webkit-scrollbar-thumb {
+  background: #373a40;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #4a4d55;
+}
+
+/* Custom resize handle */
+.resize-handle {
+  background: transparent;
+  transition: background 0.15s;
+}
+.resize-handle:hover,
+.resize-handle.active {
+  background: #7950f2;
+}
+
+/* Method badges */
+.method-GET    { color: #4ade80; }
+.method-POST   { color: #60a5fa; }
+.method-PUT    { color: #fbbf24; }
+.method-PATCH  { color: #f97316; }
+.method-DELETE { color: #f87171; }
+.method-HEAD   { color: #a78bfa; }
+.method-OPTIONS{ color: #6ee7b7; }
+
+/* Status code colors */
+.status-2xx { color: #4ade80; }
+.status-3xx { color: #60a5fa; }
+.status-4xx { color: #fbbf24; }
+.status-5xx { color: #f87171; }
+
+/* Tab active */
+.tab-active {
+  border-bottom: 2px solid #7950f2;
+  color: #c9d1d9;
+}
+
+/* Input base */
+input, textarea, select {
+  background: #1a1b1e;
+  border: 1px solid #373a40;
+  color: #c9d1d9;
+  border-radius: 4px;
+  outline: none;
+  font-size: 13px;
+}
+input:focus, textarea:focus, select:focus {
+  border-color: #7950f2;
+}
+
+/* Button base */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.btn-primary {
+  background: #7950f2;
+  color: #fff;
+  border-color: #7950f2;
+}
+.btn-primary:hover { background: #6741d9; }
+.btn-ghost {
+  background: transparent;
+  color: #6e7681;
+  border-color: #373a40;
+}
+.btn-ghost:hover { background: #2d2e33; color: #c9d1d9; }
+.btn-danger {
+  background: transparent;
+  color: #f87171;
+  border-color: #f87171;
+}
+.btn-danger:hover { background: #3a1a1a; }
+.btn-send {
+  background: #7950f2;
+  color: #fff;
+  padding: 6px 20px;
+  font-size: 13px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.15s;
+}
+.btn-send:hover { background: #6741d9; }
+.btn-send:disabled { background: #3d3d4e; cursor: not-allowed; }
+
+/* CodeMirror overrides */
+.cm-editor {
+  height: 100%;
+  font-size: 13px;
+}
+.cm-scroller {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace !important;
+}
+
+/* Panel splitter */
+.splitter {
+  cursor: row-resize;
+  background: #373a40;
+  height: 4px;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+.splitter:hover { background: #7950f2; }
+.splitter-v {
+  cursor: col-resize;
+  background: #373a40;
+  width: 4px;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+.splitter-v:hover { background: #7950f2; }
