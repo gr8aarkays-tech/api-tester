@@ -176,6 +176,7 @@ export const useDbStore = create<DbState>((set, get) => ({
     const conn = connections.find((c) => c.id === activeConnectionId)
     if (!conn) return
     set({ isRunningQuery: true, queryResult: null })
+    const start = Date.now()
     try {
       const result = await runQuery({ connection: conn, sql: activeSql, params })
       set({ queryResult: result })
