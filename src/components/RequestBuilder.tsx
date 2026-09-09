@@ -36,7 +36,7 @@ export default function RequestBuilder() {
     environments, activeEnvId,
     isLoading, setLoading, setResponse, response,
     addHistoryEntry, setShowCodeGen,
-    duplicateRequest,
+    duplicateRequest, registerSendFn,
   } = useStore()
 
   const { dbVariables } = useDbStore()
@@ -114,10 +114,10 @@ export default function RequestBuilder() {
     }
   }, [activeRequest, activeEnv, isLoading])
 
-  // Register Ctrl+Enter globally within the component so the shortcut works
-  // regardless of which input (URL, headers, body, etc.) currently has focus.
+  // Keep the ref and store registration in sync with the latest handleSend.
   useEffect(() => {
     handleSendRef.current = handleSend
+    registerSendFn(handleSend)
   })
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {

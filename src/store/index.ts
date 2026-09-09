@@ -76,6 +76,9 @@ interface AppState {
   // Response
   setResponse: (r: ResponseData | null) => void
   setLoading: (v: boolean) => void
+  // Registered by RequestBuilder so any component can trigger a re-send
+  sendFn: (() => void) | null
+  registerSendFn: (fn: () => void) => void
 
   // Environments
   createEnvironment: (name: string) => void
@@ -132,6 +135,7 @@ export const useStore = create<AppState>((set, get) => ({
   showSettings: false,
   searchOpen: false,
   searchQuery: '',
+  sendFn: null,
 
   // Collections
   createCollection: (name) => {
@@ -340,6 +344,7 @@ export const useStore = create<AppState>((set, get) => ({
   // Response
   setResponse: (r) => set({ response: r }),
   setLoading: (v) => set({ isLoading: v }),
+  registerSendFn: (fn) => set({ sendFn: fn }),
 
   // Environments
   createEnvironment: (name) => {

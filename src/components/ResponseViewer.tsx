@@ -37,17 +37,21 @@ function isHostedOrigin() {
 }
 
 function ErrorPanel({ error }: { error: string }) {
-  const { settings, updateSettings, setShowSettings } = useStore()
+  const { settings, updateSettings, setShowSettings, sendFn } = useStore()
   const backendOnline = useDbStore((s) => s.backendOnline)
   const isCors = isCorsError(error)
   const hosted = isHostedOrigin()
 
   const enablePublicProxy = () => {
+    // Persist first so apiClient.ts reads the new settings on the very next call
     updateSettings({ useProxy: true, proxyMode: 'public' })
+    // Retry immediately after a tick (React state flush + storageService persist)
+    setTimeout(() => sendFn?.(), 0)
   }
 
   const enableLocalProxy = () => {
     updateSettings({ useProxy: true, proxyMode: 'local', proxyUrl: settings.proxyUrl || 'http://localhost:4001' })
+    setTimeout(() => sendFn?.(), 0)
   }
 
   if (isCors) {
