@@ -160,6 +160,7 @@ export interface AppTab {
 export interface AppSettings {
   proxyUrl: string
   useProxy: boolean
+  proxyMode: 'local' | 'public'
   requestTimeout: number
   followRedirects: boolean
   sslVerify: boolean

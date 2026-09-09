@@ -197,6 +197,45 @@ export async function executeRequest(
 
   // ── Proxy path ──────────────────────────────────────────────────────────────
   if (settings.useProxy) {
+    const mode = settings.proxyMode ?? 'local'
+
+    // ── Public proxy (corsproxy.io) — no local server needed ──────────────────
+    if (mode === 'public') {
+      try {
+        const proxyUrl = `https://corsproxy.io/?url=${encodeURIComponent(url)}`
+        const fetchResp = await fetch(proxyUrl, {
+          method: request.method,
+          headers,
+          body: body as BodyInit,
+          signal: combinedSignal,
+          redirect: 'follow',
+        })
+        const responseTime = Math.round(performance.now() - startTime)
+        const respText = await fetchResp.text()
+        const size = new Blob([respText]).size
+        const respHeaders: Record<string, string> = {}
+        fetchResp.headers.forEach((value, key) => { respHeaders[key] = value })
+        const partial: ResponseData = {
+          status: fetchResp.status,
+          statusText: fetchResp.statusText || getStatusText(fetchResp.status),
+          headers: respHeaders,
+          body: respText,
+          responseTime,
+          size,
+          testResults: [],
+        }
+        partial.testResults = runTests(request, partial)
+        clearTimeout(timeoutId)
+        return partial
+      } catch (err: unknown) {
+        clearTimeout(timeoutId)
+        const responseTime = Math.round(performance.now() - startTime)
+        const message = err instanceof Error ? err.message : String(err)
+        return { status: 0, statusText: 'Proxy Error', headers: {}, body: '', responseTime, size: 0, testResults: [], error: `Public proxy error: ${message}` }
+      }
+    }
+
+    // ── Local proxy (backend server on port 4001) ──────────────────────────────
     const proxyBase = settings.proxyUrl || DB_BACKEND
     try {
       const bodyStr = body instanceof FormData

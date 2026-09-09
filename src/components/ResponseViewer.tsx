@@ -30,13 +30,24 @@ function isCorsError(msg: string) {
   return msg.includes('Network Error') || msg.includes('CORS') || msg.includes('Failed to fetch') || msg.includes('NetworkError')
 }
 
+/** True when the app is served from GitHub Pages (or any non-localhost origin). */
+function isHostedOrigin() {
+  const host = window.location.hostname
+  return host !== 'localhost' && host !== '127.0.0.1' && host !== ''
+}
+
 function ErrorPanel({ error }: { error: string }) {
   const { settings, updateSettings, setShowSettings } = useStore()
   const backendOnline = useDbStore((s) => s.backendOnline)
   const isCors = isCorsError(error)
+  const hosted = isHostedOrigin()
 
-  const enableProxy = () => {
-    updateSettings({ useProxy: true, proxyUrl: settings.proxyUrl || 'http://localhost:4001' })
+  const enablePublicProxy = () => {
+    updateSettings({ useProxy: true, proxyMode: 'public' })
+  }
+
+  const enableLocalProxy = () => {
+    updateSettings({ useProxy: true, proxyMode: 'local', proxyUrl: settings.proxyUrl || 'http://localhost:4001' })
   }
 
   if (isCors) {
@@ -44,59 +55,89 @@ function ErrorPanel({ error }: { error: string }) {
       <div className="flex flex-col gap-4 p-5 max-w-xl">
         <div className="flex items-center gap-2">
           <span className="text-danger text-lg">✕</span>
-          <span className="text-danger font-semibold text-sm">Request Failed — Network / CORS Error</span>
+          <span className="text-danger font-semibold text-sm">Request Failed — CORS Error</span>
         </div>
 
         <p className="text-xs text-muted leading-relaxed">
-          The browser blocked this request because the target API does not allow cross-origin requests
-          from this origin. This is a browser security restriction, not an API bug.
+          The browser blocked this request because the target API does not include CORS headers
+          allowing <code className="bg-bg px-1 rounded font-mono">{window.location.origin}</code>.
+          This is a browser security policy, not a bug in the app.
         </p>
 
-        {/* Proxy fix — primary recommendation */}
-        <div className={`rounded border p-3 flex flex-col gap-2 ${backendOnline ? 'border-success/40 bg-success/5' : 'border-border bg-surface'}`}>
+        {/* ── Option 1: Public proxy (works everywhere, zero setup) ── */}
+        <div className="rounded border border-accent/40 bg-accent/5 p-3 flex flex-col gap-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-text">
-              Fix: Route requests through the local proxy
-            </span>
-            <span className={`text-[10px] px-1.5 py-0.5 rounded font-semibold ${backendOnline ? 'bg-success/20 text-success' : 'bg-danger/20 text-danger'}`}>
-              Backend {backendOnline ? 'online ✓' : 'offline ✗'}
+            <span className="text-xs font-semibold text-text">Fix: Use public CORS proxy</span>
+            <span className="text-[10px] px-1.5 py-0.5 rounded font-semibold bg-success/20 text-success">
+              Zero setup ✓
             </span>
           </div>
-          <p className="text-[11px] text-muted">
-            The backend proxy server runs locally on port 4001 and forwards requests server-side,
-            bypassing browser CORS restrictions entirely.
+          <p className="text-[11px] text-muted leading-relaxed">
+            Routes your request through <strong className="text-text">corsproxy.io</strong>, a free public
+            relay that adds CORS headers on the way back. Works instantly from GitHub Pages
+            or any hosted environment — no server to install.
           </p>
-          {settings.useProxy ? (
+          <p className="text-[11px] text-warning">
+            ⚠ Don't use for requests containing passwords, tokens, or private data.
+          </p>
+          {settings.useProxy && settings.proxyMode === 'public' ? (
             <div className="flex items-center gap-2 text-xs text-success">
-              <span>✓</span> Proxy is already enabled — if requests still fail, check that the backend is running.
+              <span>✓</span> Public proxy is already active. Retry your request.
             </div>
           ) : (
-            <button
-              className="btn btn-primary text-xs self-start"
-              onClick={enableProxy}
-              disabled={false}
-            >
-              Enable Proxy
+            <button className="btn btn-primary text-xs self-start" onClick={enablePublicProxy}>
+              Enable Public Proxy &amp; Retry
             </button>
-          )}
-          {!backendOnline && (
-            <div className="text-[11px] text-warning mt-1">
-              Backend is not reachable. Start it first:
-              <pre className="mt-1 bg-bg rounded px-2 py-1 font-mono text-[10px] text-text select-all">cd API/server &amp;&amp; npm install &amp;&amp; node index.js</pre>
-            </div>
           )}
         </div>
 
-        {/* Other possible causes */}
-        <div className="rounded border border-border bg-surface p-3 flex flex-col gap-1.5">
-          <span className="text-xs font-semibold text-text">Other possible causes</span>
-          <ul className="text-[11px] text-muted flex flex-col gap-1 list-disc list-inside">
-            <li>The URL is incorrect or the host is unreachable</li>
-            <li>The target server is down</li>
-            <li>A VPN or firewall is blocking the connection</li>
-            <li>HTTPS → HTTP mixed-content block</li>
-          </ul>
-        </div>
+        {/* ── Option 2: Local backend proxy (private, no data leaves your machine) ── */}
+        {!hosted && (
+          <div className={`rounded border p-3 flex flex-col gap-2 ${backendOnline ? 'border-success/40 bg-success/5' : 'border-border bg-surface'}`}>
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-text">Alternative: Local backend proxy</span>
+              <span className={`text-[10px] px-1.5 py-0.5 rounded font-semibold ${backendOnline ? 'bg-success/20 text-success' : 'bg-muted/20 text-muted'}`}>
+                Backend {backendOnline ? 'online ✓' : 'offline'}
+              </span>
+            </div>
+            <p className="text-[11px] text-muted">
+              Runs a Node.js server on your machine at port 4001. Your requests never
+              leave your computer — suitable for credentials and private APIs.
+            </p>
+            {!backendOnline && (
+              <div className="bg-bg rounded p-2">
+                <p className="text-[11px] text-muted mb-1">Start the backend first:</p>
+                <pre className="font-mono text-[10px] text-text select-all">cd API/server &amp;&amp; npm install &amp;&amp; node index.js</pre>
+              </div>
+            )}
+            {settings.useProxy && settings.proxyMode === 'local' ? (
+              <div className="flex items-center gap-2 text-xs text-success">
+                <span>✓</span> Local proxy is already enabled.
+              </div>
+            ) : (
+              <button
+                className="btn btn-ghost text-xs self-start"
+                onClick={enableLocalProxy}
+                disabled={!backendOnline}
+                title={!backendOnline ? 'Start the backend server first' : ''}
+              >
+                Use Local Proxy
+              </button>
+            )}
+          </div>
+        )}
+
+        {hosted && (
+          <div className="rounded border border-border bg-surface p-3 flex flex-col gap-1.5">
+            <span className="text-xs font-semibold text-text">Other possible causes</span>
+            <ul className="text-[11px] text-muted flex flex-col gap-1 list-disc list-inside">
+              <li>The URL is incorrect or the host is unreachable</li>
+              <li>The target API server is down</li>
+              <li>A VPN or firewall is blocking the connection</li>
+              <li>Mixed content — HTTP API called from an HTTPS page</li>
+            </ul>
+          </div>
+        )}
 
         <button className="text-xs text-accent hover:underline self-start" onClick={() => setShowSettings(true)}>
           Open Settings →

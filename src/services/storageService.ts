@@ -57,14 +57,17 @@ export const storageService = {
   },
 
   // Settings
-  getSettings: (): AppSettings =>
-    load<AppSettings>(KEYS.settings, {
-      proxyUrl: 'http://localhost:4001',
-      useProxy: false,
-      requestTimeout: 30000,
-      followRedirects: true,
-      sslVerify: true,
-    }),
+  getSettings: (): AppSettings => {
+    const saved = load<Partial<AppSettings>>(KEYS.settings, {})
+    return {
+      proxyUrl: saved.proxyUrl ?? 'http://localhost:4001',
+      useProxy: saved.useProxy ?? false,
+      proxyMode: saved.proxyMode ?? 'public',
+      requestTimeout: saved.requestTimeout ?? 30000,
+      followRedirects: saved.followRedirects ?? true,
+      sslVerify: saved.sslVerify ?? true,
+    }
+  },
   saveSettings: (s: AppSettings) => save(KEYS.settings, s),
 
   // Active env

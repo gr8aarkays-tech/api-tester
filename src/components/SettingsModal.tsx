@@ -38,48 +38,77 @@ export default function SettingsModal() {
 
           <div className="border border-border rounded p-3 flex flex-col gap-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-text">Backend Proxy</span>
-              <span className={`text-[10px] px-1.5 py-0.5 rounded font-semibold ${backendOnline ? 'bg-success/20 text-success' : 'bg-danger/20 text-danger'}`}>
-                {backendOnline ? '● Online' : '● Offline'}
-              </span>
+              <span className="text-xs font-semibold text-text">CORS Proxy</span>
             </div>
 
             <p className="text-[11px] text-muted leading-relaxed">
-              The local proxy server (port 4001) forwards requests server-side, bypassing browser CORS restrictions.
-              Required for APIs that don't allow cross-origin requests.
+              When a target API blocks cross-origin requests, enable a proxy to relay them
+              and bypass browser CORS restrictions.
             </p>
-
-            {!backendOnline && (
-              <div className="bg-bg rounded p-2">
-                <p className="text-[11px] text-warning mb-1">Start the backend server:</p>
-                <pre className="font-mono text-[10px] text-text select-all">cd API/server &amp;&amp; npm install &amp;&amp; node index.js</pre>
-              </div>
-            )}
 
             <div className="flex items-center gap-2">
               <input
                 type="checkbox"
                 checked={settings.useProxy}
-                onChange={(e) => updateSettings({
-                  useProxy: e.target.checked,
-                  proxyUrl: e.target.checked && !settings.proxyUrl ? 'http://localhost:4001' : settings.proxyUrl,
-                })}
+                onChange={(e) => updateSettings({ useProxy: e.target.checked })}
                 className="accent-accent"
                 id="use-proxy"
               />
-              <label htmlFor="use-proxy" className="text-xs text-text">Route all requests through proxy</label>
+              <label htmlFor="use-proxy" className="text-xs text-text">Enable proxy</label>
             </div>
 
             {settings.useProxy && (
-              <div className="flex flex-col gap-1">
-                <label className="text-xs text-muted">Proxy URL</label>
-                <input
-                  className="px-2 py-1.5 text-xs flex-1"
-                  placeholder="http://localhost:4001"
-                  value={settings.proxyUrl}
-                  onChange={(e) => updateSettings({ proxyUrl: e.target.value })}
-                />
-              </div>
+              <>
+                {/* Mode selector */}
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs text-muted">Proxy mode</label>
+                  <div className="flex gap-2">
+                    {(['public', 'local'] as const).map((mode) => (
+                      <button
+                        key={mode}
+                        className={`px-3 py-1.5 text-xs rounded border ${settings.proxyMode === mode ? 'border-accent bg-accent/10 text-accent' : 'border-border text-muted hover:text-text'}`}
+                        onClick={() => updateSettings({ proxyMode: mode })}
+                      >
+                        {mode === 'public' ? '🌐 Public (corsproxy.io)' : '🖥 Local (port 4001)'}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {settings.proxyMode === 'public' && (
+                  <div className="bg-bg rounded p-2 text-[11px] text-muted leading-relaxed">
+                    Requests are relayed through <strong className="text-text">corsproxy.io</strong>.
+                    Works on GitHub Pages and any hosted environment — no setup required.{' '}
+                    <span className="text-warning">Do not use with sensitive credentials.</span>
+                  </div>
+                )}
+
+                {settings.proxyMode === 'local' && (
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] text-muted">Backend server status</span>
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded font-semibold ${backendOnline ? 'bg-success/20 text-success' : 'bg-danger/20 text-danger'}`}>
+                        {backendOnline ? '● Online' : '● Offline'}
+                      </span>
+                    </div>
+                    {!backendOnline && (
+                      <div className="bg-bg rounded p-2">
+                        <p className="text-[11px] text-warning mb-1">Start the backend server:</p>
+                        <pre className="font-mono text-[10px] text-text select-all">cd API/server &amp;&amp; npm install &amp;&amp; node index.js</pre>
+                      </div>
+                    )}
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs text-muted">Backend URL</label>
+                      <input
+                        className="px-2 py-1.5 text-xs flex-1"
+                        placeholder="http://localhost:4001"
+                        value={settings.proxyUrl}
+                        onChange={(e) => updateSettings({ proxyUrl: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
 
