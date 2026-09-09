@@ -31,7 +31,16 @@ const app = express()
 
 // Allow the Vite dev-server origin only; in production callers come from
 // the same origin, so this list can be tightened further.
-app.use(cors({ origin: ['http://localhost:5173', 'http://localhost:4173', 'http://127.0.0.1:5173'] }))
+app.use(cors({
+  origin: [
+    'http://localhost:5173',
+    'http://localhost:4173',
+    'http://localhost:3000',
+    'http://127.0.0.1:5173',
+    'http://127.0.0.1:4173',
+    'http://127.0.0.1:3000',
+  ],
+}))
 app.use(express.json({ limit: '10mb' }))
 
 const PORT = process.env.PORT || 4001

@@ -1,8 +1,10 @@
 import React from 'react'
 import { useStore } from '../store'
+import { useDbStore } from '../store/dbStore'
 
 export default function SettingsModal() {
   const { settings, updateSettings, setShowSettings } = useStore()
+  const backendOnline = useDbStore((s) => s.backendOnline)
 
   return (
     <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center" onClick={() => setShowSettings(false)}>
@@ -34,29 +36,52 @@ export default function SettingsModal() {
             <label htmlFor="follow-redirects" className="text-xs text-text">Follow Redirects</label>
           </div>
 
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={settings.useProxy}
-              onChange={(e) => updateSettings({ useProxy: e.target.checked })}
-              className="accent-accent"
-              id="use-proxy"
-            />
-            <label htmlFor="use-proxy" className="text-xs text-text">Use Proxy</label>
-          </div>
-
-          {settings.useProxy && (
-            <div className="flex flex-col gap-1">
-              <label className="text-xs text-muted">Proxy URL</label>
-              <input
-                className="px-2 py-1.5 text-xs flex-1"
-                placeholder="http://proxy.example.com:8080"
-                value={settings.proxyUrl}
-                onChange={(e) => updateSettings({ proxyUrl: e.target.value })}
-              />
-              <p className="text-muted text-xs">Requests will be routed through this proxy to bypass CORS restrictions.</p>
+          <div className="border border-border rounded p-3 flex flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-text">Backend Proxy</span>
+              <span className={`text-[10px] px-1.5 py-0.5 rounded font-semibold ${backendOnline ? 'bg-success/20 text-success' : 'bg-danger/20 text-danger'}`}>
+                {backendOnline ? '● Online' : '● Offline'}
+              </span>
             </div>
-          )}
+
+            <p className="text-[11px] text-muted leading-relaxed">
+              The local proxy server (port 4001) forwards requests server-side, bypassing browser CORS restrictions.
+              Required for APIs that don't allow cross-origin requests.
+            </p>
+
+            {!backendOnline && (
+              <div className="bg-bg rounded p-2">
+                <p className="text-[11px] text-warning mb-1">Start the backend server:</p>
+                <pre className="font-mono text-[10px] text-text select-all">cd API/server &amp;&amp; npm install &amp;&amp; node index.js</pre>
+              </div>
+            )}
+
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={settings.useProxy}
+                onChange={(e) => updateSettings({
+                  useProxy: e.target.checked,
+                  proxyUrl: e.target.checked && !settings.proxyUrl ? 'http://localhost:4001' : settings.proxyUrl,
+                })}
+                className="accent-accent"
+                id="use-proxy"
+              />
+              <label htmlFor="use-proxy" className="text-xs text-text">Route all requests through proxy</label>
+            </div>
+
+            {settings.useProxy && (
+              <div className="flex flex-col gap-1">
+                <label className="text-xs text-muted">Proxy URL</label>
+                <input
+                  className="px-2 py-1.5 text-xs flex-1"
+                  placeholder="http://localhost:4001"
+                  value={settings.proxyUrl}
+                  onChange={(e) => updateSettings({ proxyUrl: e.target.value })}
+                />
+              </div>
+            )}
+          </div>
 
           <div className="border-t border-border pt-3">
             <h3 className="text-xs font-semibold text-muted mb-2">Keyboard Shortcuts</h3>

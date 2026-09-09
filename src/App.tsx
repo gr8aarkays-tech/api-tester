@@ -31,7 +31,7 @@ export default function App() {
     searchOpen, setSearchOpen, searchQuery, setSearchQuery,
   } = useStore()
 
-  const { dbView, setBackendOnline } = useDbStore()
+  const { dbView, setBackendOnline, backendOnline } = useDbStore()
 
   // Ping backend on mount and every 30s
   useEffect(() => {
@@ -151,9 +151,20 @@ export default function App() {
 
         {/* Right actions */}
         <div className="flex items-center gap-1 ml-2">
-          <button className="btn btn-ghost text-xs" onClick={() => setSearchOpen(true)} title="Search (Ctrl+K)">🔍</button>
+          <button
+            className="btn btn-ghost text-xs"
+            onClick={() => setSearchOpen(true)}
+            title="Search (Ctrl+K)"
+          >🔍</button>
           <button className="btn btn-ghost text-xs" onClick={() => setShowImport(true)}>⬆ Import</button>
-          <button className="btn btn-ghost text-xs" onClick={() => setShowSettings(true)}>⚙</button>
+          <button
+            className={`btn btn-ghost text-xs flex items-center gap-1.5`}
+            onClick={() => setShowSettings(true)}
+            title="Settings — Backend is currently offline. Enable proxy to bypass CORS."
+          >
+            <span>⚙</span>
+            <span className={`inline-block w-1.5 h-1.5 rounded-full ${backendOnline ? 'bg-success' : 'bg-danger'}`} />
+          </button>
         </div>
       </header>
 

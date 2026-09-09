@@ -59,7 +59,7 @@ export const storageService = {
   // Settings
   getSettings: (): AppSettings =>
     load<AppSettings>(KEYS.settings, {
-      proxyUrl: '',
+      proxyUrl: 'http://localhost:4001',
       useProxy: false,
       requestTimeout: 30000,
       followRedirects: true,

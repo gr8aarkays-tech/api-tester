@@ -4,6 +4,7 @@ import { json } from '@codemirror/lang-json'
 import { xml } from '@codemirror/lang-xml'
 import { oneDark } from '@codemirror/theme-one-dark'
 import { useStore } from '../store'
+import { useDbStore } from '../store/dbStore'
 import { formatJson } from '../utils/jsonFormatter'
 import { formatXml, formatBytes, detectBodyLanguage } from '../utils/jsonFormatter'
 
@@ -23,6 +24,96 @@ function StatusBadge({ status }: { status: number }) {
   const cls = status >= 500 ? 'text-danger' : status >= 400 ? 'text-warning' : status >= 300 ? 'text-info' : 'text-success'
   const text = status === 0 ? 'ERR' : status
   return <span className={`font-bold text-sm ${cls}`}>{text}</span>
+}
+
+function isCorsError(msg: string) {
+  return msg.includes('Network Error') || msg.includes('CORS') || msg.includes('Failed to fetch') || msg.includes('NetworkError')
+}
+
+function ErrorPanel({ error }: { error: string }) {
+  const { settings, updateSettings, setShowSettings } = useStore()
+  const backendOnline = useDbStore((s) => s.backendOnline)
+  const isCors = isCorsError(error)
+
+  const enableProxy = () => {
+    updateSettings({ useProxy: true, proxyUrl: settings.proxyUrl || 'http://localhost:4001' })
+  }
+
+  if (isCors) {
+    return (
+      <div className="flex flex-col gap-4 p-5 max-w-xl">
+        <div className="flex items-center gap-2">
+          <span className="text-danger text-lg">✕</span>
+          <span className="text-danger font-semibold text-sm">Request Failed — Network / CORS Error</span>
+        </div>
+
+        <p className="text-xs text-muted leading-relaxed">
+          The browser blocked this request because the target API does not allow cross-origin requests
+          from this origin. This is a browser security restriction, not an API bug.
+        </p>
+
+        {/* Proxy fix — primary recommendation */}
+        <div className={`rounded border p-3 flex flex-col gap-2 ${backendOnline ? 'border-success/40 bg-success/5' : 'border-border bg-surface'}`}>
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-text">
+              Fix: Route requests through the local proxy
+            </span>
+            <span className={`text-[10px] px-1.5 py-0.5 rounded font-semibold ${backendOnline ? 'bg-success/20 text-success' : 'bg-danger/20 text-danger'}`}>
+              Backend {backendOnline ? 'online ✓' : 'offline ✗'}
+            </span>
+          </div>
+          <p className="text-[11px] text-muted">
+            The backend proxy server runs locally on port 4001 and forwards requests server-side,
+            bypassing browser CORS restrictions entirely.
+          </p>
+          {settings.useProxy ? (
+            <div className="flex items-center gap-2 text-xs text-success">
+              <span>✓</span> Proxy is already enabled — if requests still fail, check that the backend is running.
+            </div>
+          ) : (
+            <button
+              className="btn btn-primary text-xs self-start"
+              onClick={enableProxy}
+              disabled={false}
+            >
+              Enable Proxy
+            </button>
+          )}
+          {!backendOnline && (
+            <div className="text-[11px] text-warning mt-1">
+              Backend is not reachable. Start it first:
+              <pre className="mt-1 bg-bg rounded px-2 py-1 font-mono text-[10px] text-text select-all">cd API/server &amp;&amp; npm install &amp;&amp; node index.js</pre>
+            </div>
+          )}
+        </div>
+
+        {/* Other possible causes */}
+        <div className="rounded border border-border bg-surface p-3 flex flex-col gap-1.5">
+          <span className="text-xs font-semibold text-text">Other possible causes</span>
+          <ul className="text-[11px] text-muted flex flex-col gap-1 list-disc list-inside">
+            <li>The URL is incorrect or the host is unreachable</li>
+            <li>The target server is down</li>
+            <li>A VPN or firewall is blocking the connection</li>
+            <li>HTTPS → HTTP mixed-content block</li>
+          </ul>
+        </div>
+
+        <button className="text-xs text-accent hover:underline self-start" onClick={() => setShowSettings(true)}>
+          Open Settings →
+        </button>
+      </div>
+    )
+  }
+
+  // Generic error
+  return (
+    <div className="flex flex-col gap-3 p-4">
+      <div className="text-danger font-semibold text-sm">Request Failed</div>
+      <div className="rounded border border-danger/30 bg-danger/10 p-4 text-xs text-danger whitespace-pre-wrap font-mono">
+        {error}
+      </div>
+    </div>
+  )
 }
 
 export default function ResponseViewer() {
@@ -51,14 +142,7 @@ export default function ResponseViewer() {
   }
 
   if (response.error) {
-    return (
-      <div className="flex flex-col gap-3 p-4">
-        <div className="text-danger font-semibold text-sm">Request Failed</div>
-        <div className="rounded border border-danger/30 bg-danger/10 p-4 text-xs text-danger whitespace-pre-wrap font-mono">
-          {response.error}
-        </div>
-      </div>
-    )
+    return <ErrorPanel error={response.error} />
   }
 
   const bodyLang = detectBodyLanguage(response.headers, response.body)
