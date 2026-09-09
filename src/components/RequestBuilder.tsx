@@ -114,11 +114,18 @@ export default function RequestBuilder() {
     }
   }, [activeRequest, activeEnv, isLoading])
 
-  // Keep the ref and store registration in sync with the latest handleSend.
+  // Keep the ref in sync with the latest handleSend on every render.
   useEffect(() => {
     handleSendRef.current = handleSend
-    registerSendFn(handleSend)
   })
+
+  // Register a stable wrapper once on mount. The wrapper always calls the
+  // latest handleSend via the ref, so we never need to re-register.
+  useEffect(() => {
+    registerSendFn(() => handleSendRef.current())
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
