@@ -76,10 +76,33 @@ export default function SettingsModal() {
                 </div>
 
                 {settings.proxyMode === 'public' && (
-                  <div className="bg-bg rounded p-2 text-[11px] text-muted leading-relaxed">
-                    Requests are relayed through <strong className="text-text">corsproxy.io</strong>.
-                    Works on GitHub Pages and any hosted environment — no setup required.{' '}
-                    <span className="text-warning">Do not use with sensitive credentials.</span>
+                  <div className="flex flex-col gap-2">
+                    <div className="bg-bg rounded p-2 text-[11px] text-muted leading-relaxed">
+                      Relays requests through a CORS proxy service. Works directly on GitHub Pages with no local server required.{' '}
+                      <span className="text-warning">Do not relay sensitive passwords or private production tokens through third-party public proxies.</span>
+                    </div>
+
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs text-muted">Custom Public Proxy URL (optional)</label>
+                      <input
+                        className="px-2 py-1.5 text-xs flex-1 bg-surface border border-border rounded"
+                        placeholder="https://corsproxy.io/?url= or your Cloudflare worker URL"
+                        value={settings.publicProxyUrl || ''}
+                        onChange={(e) => updateSettings({ publicProxyUrl: e.target.value })}
+                      />
+                      <span className="text-[10px] text-muted">Supports <code>{'{url}'}</code> placeholder or append format (e.g. <code>https://my-proxy.workers.dev/?url=</code>)</span>
+                    </div>
+
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs text-muted">CORS Proxy API Key (optional)</label>
+                      <input
+                        type="password"
+                        className="px-2 py-1.5 text-xs flex-1 bg-surface border border-border rounded"
+                        placeholder="corsproxy.io API Key (if using a paid key)"
+                        value={settings.corsApiKey || ''}
+                        onChange={(e) => updateSettings({ corsApiKey: e.target.value })}
+                      />
+                    </div>
                   </div>
                 )}
 

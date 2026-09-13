@@ -161,6 +161,8 @@ export interface AppSettings {
   proxyUrl: string
   useProxy: boolean
   proxyMode: 'local' | 'public'
+  publicProxyUrl?: string
+  corsApiKey?: string
   requestTimeout: number
   followRedirects: boolean
   sslVerify: boolean

@@ -63,6 +63,8 @@ export const storageService = {
       proxyUrl: saved.proxyUrl ?? 'http://localhost:4001',
       useProxy: saved.useProxy ?? false,
       proxyMode: saved.proxyMode ?? 'public',
+      publicProxyUrl: saved.publicProxyUrl ?? '',
+      corsApiKey: saved.corsApiKey ?? '',
       requestTimeout: saved.requestTimeout ?? 30000,
       followRedirects: saved.followRedirects ?? true,
       sslVerify: saved.sslVerify ?? true,

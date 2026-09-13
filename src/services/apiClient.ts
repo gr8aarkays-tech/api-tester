@@ -199,13 +199,32 @@ export async function executeRequest(
   if (settings.useProxy) {
     const mode = settings.proxyMode ?? 'local'
 
-    // ── Public proxy (corsproxy.io) — no local server needed ──────────────────
+    // ── Public proxy (corsproxy.io / custom proxy) — no local server needed ───
     if (mode === 'public') {
       try {
-        const proxyUrl = `https://corsproxy.io/?url=${encodeURIComponent(url)}`
+        let proxyUrl: string
+        const customTemplate = settings.publicProxyUrl?.trim()
+
+        if (customTemplate) {
+          if (customTemplate.includes('{url}')) {
+            proxyUrl = customTemplate.replace('{url}', encodeURIComponent(url))
+          } else if (customTemplate.endsWith('=') || customTemplate.endsWith('/')) {
+            proxyUrl = `${customTemplate}${encodeURIComponent(url)}`
+          } else {
+            proxyUrl = `${customTemplate}?url=${encodeURIComponent(url)}`
+          }
+        } else {
+          proxyUrl = `https://corsproxy.io/?url=${encodeURIComponent(url)}`
+        }
+
+        const proxyHeaders: Record<string, string> = { ...headers }
+        if (settings.corsApiKey?.trim()) {
+          proxyHeaders['x-cors-proxy-api-key'] = settings.corsApiKey.trim()
+        }
+
         const fetchResp = await fetch(proxyUrl, {
           method: request.method,
-          headers,
+          headers: proxyHeaders,
           body: body as BodyInit,
           signal: combinedSignal,
           redirect: 'follow',

@@ -68,31 +68,38 @@ function ErrorPanel({ error }: { error: string }) {
           This is a browser security policy, not a bug in the app.
         </p>
 
-        {/* ── Option 1: Public proxy (works everywhere, zero setup) ── */}
+        {/* ── Option 1: Public proxy (works on GitHub Pages & hosted environments) ── */}
         <div className="rounded border border-accent/40 bg-accent/5 p-3 flex flex-col gap-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-text">Fix: Use public CORS proxy</span>
+            <span className="text-xs font-semibold text-text">Fix: Use CORS proxy</span>
             <span className="text-[10px] px-1.5 py-0.5 rounded font-semibold bg-success/20 text-success">
-              Zero setup ✓
+              GitHub Pages ✓
             </span>
           </div>
           <p className="text-[11px] text-muted leading-relaxed">
-            Routes your request through <strong className="text-text">corsproxy.io</strong>, a free public
-            relay that adds CORS headers on the way back. Works instantly from GitHub Pages
-            or any hosted environment — no server to install.
+            Relays requests through a CORS proxy service that attaches CORS headers. Works directly from GitHub Pages or any browser without installing local dependencies.
           </p>
           <p className="text-[11px] text-warning">
-            ⚠ Don't use for requests containing passwords, tokens, or private data.
+            ⚠ Note: Third-party public proxies may require an API key or rate-limit requests. You can also configure your own Cloudflare Worker proxy in Settings (⚙️).
           </p>
-          {settings.useProxy && settings.proxyMode === 'public' ? (
-            <div className="flex items-center gap-2 text-xs text-success">
-              <span>✓</span> Public proxy is already active. Retry your request.
-            </div>
-          ) : (
-            <button className="btn btn-primary text-xs self-start" onClick={enablePublicProxy}>
-              Enable Public Proxy &amp; Retry
+          <div className="flex items-center gap-2">
+            {settings.useProxy && settings.proxyMode === 'public' ? (
+              <div className="flex items-center gap-2 text-xs">
+                <span className="text-success">✓</span>
+                <span className="text-success">Proxy is active.</span>
+                <button className="btn btn-primary text-xs" onClick={() => sendFn?.()}>
+                  Retry
+                </button>
+              </div>
+            ) : (
+              <button className="btn btn-primary text-xs self-start" onClick={enablePublicProxy}>
+                Enable Public Proxy &amp; Retry
+              </button>
+            )}
+            <button className="btn btn-ghost text-xs ml-auto" onClick={() => setShowSettings(true)}>
+              ⚙️ Proxy Settings
             </button>
-          )}
+          </div>
         </div>
 
         {/* ── Option 2: Local backend proxy (private, no data leaves your machine) ── */}
