@@ -200,6 +200,23 @@ export default function ResponseViewer() {
   const bodyLang = detectBodyLanguage(response.headers, response.body)
   const formattedBody = bodyLang === 'json' ? formatJson(response.body) : bodyLang === 'xml' ? formatXml(response.body) : response.body
 
+  // Detect when a successful JSON response has null/empty top-level fields —
+  // most likely the server ignored the request body (mock API, missing Content-Type, etc.)
+  const nullFieldHint = (() => {
+    if (response.status < 200 || response.status >= 300) return null
+    if (bodyLang !== 'json') return null
+    try {
+      const parsed = JSON.parse(response.body)
+      if (typeof parsed !== 'object' || Array.isArray(parsed) || !parsed) return null
+      const vals = Object.values(parsed)
+      const nullCount = vals.filter((v) => v === null || v === undefined).length
+      if (nullCount > 0 && nullCount >= vals.length / 2) {
+        return `${nullCount} of ${vals.length} fields are null. The server may have ignored the request body — check that Content-Type: application/json is set and the API accepts a body for this method.`
+      }
+    } catch { /* ignore */ }
+    return null
+  })()
+
   const displayBody = bodyView === 'pretty' ? formattedBody : response.body
   const filteredBody = searchText ? displayBody.split('\n').filter((l) => l.toLowerCase().includes(searchText.toLowerCase())).join('\n') : displayBody
 
@@ -266,9 +283,15 @@ export default function ResponseViewer() {
       {/* Tab content */}
       <div className="flex-1 overflow-hidden flex flex-col">
         {/* BODY */}
-        {activeTab === 'body' && (
-          <>
-            <div className="flex items-center gap-2 px-3 py-1.5 border-b border-border flex-shrink-0">
+          {activeTab === 'body' && (
+            <>
+              {nullFieldHint && (
+                <div className="flex items-start gap-2 px-3 py-2 bg-warning/10 border-b border-warning/30 flex-shrink-0 text-xs text-warning">
+                  <span className="flex-shrink-0">⚠</span>
+                  <span>{nullFieldHint}</span>
+                </div>
+              )}
+              <div className="flex items-center gap-2 px-3 py-1.5 border-b border-border flex-shrink-0">
               {(['pretty', 'raw', 'preview'] as const).map((v) => (
                 <button key={v} className={`btn btn-ghost text-xs capitalize ${bodyView === v ? 'bg-accent/20 text-accent border-accent/40' : ''}`} onClick={() => setBodyView(v)}>
                   {v}
