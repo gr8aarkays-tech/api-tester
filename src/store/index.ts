@@ -65,6 +65,7 @@ interface AppState {
   // Actions — requests
   createRequest: (collectionId: string, folderId?: string) => void
   openRequest: (requestId: string) => void
+  openHistoryRequest: (req: ApiRequest) => void
   closeTab: (tabId: string) => void
   setActiveTab: (tabId: string) => void
   updateActiveRequest: (patch: Partial<ApiRequest>) => void
@@ -204,6 +205,22 @@ export const useStore = create<AppState>((set, get) => ({
     set({ requests })
     persist({ requests })
     get().openRequest(req.id)
+  },
+
+  openHistoryRequest: (req) => {
+    const { tabs } = get()
+    // Re-use an existing tab if one is already open for this request id
+    const existing = tabs.find((t) => t.requestId === req.id)
+    if (existing) {
+      set({ activeTabId: existing.id, activeRequest: { ...req }, response: null, view: 'workspace' })
+      return
+    }
+    // Ensure the request is in the in-memory list so the tab can reference it
+    const requests = get().requests.some((r) => r.id === req.id)
+      ? get().requests
+      : [...get().requests, { ...req }]
+    const tab: AppTab = { id: uuidv4(), requestId: req.id, title: req.name || req.method || 'Request', isDirty: false }
+    set({ requests, tabs: [...tabs, tab], activeTabId: tab.id, activeRequest: { ...req }, response: null, view: 'workspace' })
   },
 
   openRequest: (requestId) => {

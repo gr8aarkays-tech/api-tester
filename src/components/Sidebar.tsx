@@ -132,7 +132,7 @@ export default function Sidebar({ searchQuery }: Props) {
   const {
     collections, requests, history, environments, activeEnvId,
     sidebarTab, setSidebarTab,
-    createCollection, openRequest, clearHistory,
+    createCollection, openRequest, openHistoryRequest, clearHistory,
     setShowEnvManager, setActiveEnv,
     openBlankTab,
     setView,
@@ -171,26 +171,32 @@ export default function Sidebar({ searchQuery }: Props) {
       </div>
 
       {/* Sidebar tabs */}
-      <div className="flex flex-wrap border-b border-border text-xs">
-        {(['collections', 'environments', 'history'] as const).map((tab) => (
-          <button
-            key={tab}
-            className={`flex-1 py-2 capitalize ${sidebarTab === tab ? 'tab-active text-text' : 'text-muted hover:text-text'}`}
-            onClick={() => setSidebarTab(tab)}
-          >
-            {tab === 'collections' ? '📁' : tab === 'environments' ? '🌍' : '🕐'} {tab.slice(0, 3).toUpperCase()}
-          </button>
-        ))}
+      <div className="flex border-b border-border text-xs">
         <button
-          className={`flex-1 py-2 text-xs ${sidebarTab === 'db-connections' ? 'tab-active text-text' : 'text-muted hover:text-text'}`}
+          className={`flex-1 py-2 ${sidebarTab === 'collections' ? 'tab-active text-text' : 'text-muted hover:text-text'}`}
+          onClick={() => setSidebarTab('collections')}
+          title="Collections"
+        >📁</button>
+        <button
+          className={`flex-1 py-2 ${sidebarTab === 'history' ? 'tab-active text-text' : 'text-muted hover:text-text'}`}
+          onClick={() => setSidebarTab('history')}
+          title="History"
+        >🕐</button>
+        <button
+          className={`flex-1 py-2 ${sidebarTab === 'environments' ? 'tab-active text-text' : 'text-muted hover:text-text'}`}
+          onClick={() => setSidebarTab('environments')}
+          title="Environments"
+        >🌍</button>
+        <button
+          className={`flex-1 py-2 ${sidebarTab === 'db-connections' ? 'tab-active text-text' : 'text-muted hover:text-text'}`}
           onClick={() => setSidebarTab('db-connections')}
           title="Database Connections"
-        >🗄 DB</button>
+        >🗄</button>
         <button
-          className={`flex-1 py-2 text-xs ${sidebarTab === 'testdata' ? 'tab-active text-text' : 'text-muted hover:text-text'}`}
+          className={`flex-1 py-2 ${sidebarTab === 'testdata' ? 'tab-active text-text' : 'text-muted hover:text-text'}`}
           onClick={() => setSidebarTab('testdata')}
           title="Test Data Files"
-        >🧪 TD</button>
+        >🧪</button>
       </div>
 
       <div className="flex-1 overflow-y-auto">
@@ -270,24 +276,20 @@ export default function Sidebar({ searchQuery }: Props) {
             {history.length === 0 && (
               <div className="text-muted text-xs text-center py-8">No history yet.</div>
             )}
-            {history.slice(0, 100).map((entry) => {
-              const exists = existingRequestIds.has(entry.request.id)
-              return (
-                <div
-                  key={entry.id}
-                  className={`flex items-center gap-1 px-2 py-1 rounded text-xs ${exists ? 'cursor-pointer hover:bg-surface' : 'opacity-40 cursor-not-allowed'}`}
-                  onClick={() => exists && openRequest(entry.request.id)}
-                  title={exists ? undefined : 'This request has been deleted'}
-                >
-                  <MethodBadge method={entry.request.method} />
-                  <span className={`flex-shrink-0 text-[10px] font-bold ${entry.status >= 500 ? 'text-danger' : entry.status >= 400 ? 'text-warning' : entry.status >= 300 ? 'text-info' : 'text-success'}`}>
-                    {entry.status || 'ERR'}
-                  </span>
-                  <span className="flex-1 truncate text-muted">{entry.request.url.replace(/https?:\/\/[^/]+/, '')}</span>
-                  {!exists && <span className="text-muted text-[10px] flex-shrink-0">deleted</span>}
-                </div>
-              )
-            })}
+            {history.slice(0, 100).map((entry) => (
+              <div
+                key={entry.id}
+                className="flex items-center gap-1 px-2 py-1 rounded text-xs cursor-pointer hover:bg-surface"
+                onClick={() => openHistoryRequest(entry.request as import('../types').ApiRequest)}
+                title={`${entry.request.method} ${entry.request.url}`}
+              >
+                <MethodBadge method={entry.request.method} />
+                <span className={`flex-shrink-0 text-[10px] font-bold ${entry.status >= 500 ? 'text-danger' : entry.status >= 400 ? 'text-warning' : entry.status >= 300 ? 'text-info' : 'text-success'}`}>
+                  {entry.status || 'ERR'}
+                </span>
+                <span className="flex-1 truncate text-muted">{entry.request.url.replace(/https?:\/\/[^/]+/, '')}</span>
+              </div>
+            ))}
           </div>
         )}
 

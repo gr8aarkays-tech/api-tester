@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid'
 
-export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'HEAD' | 'OPTIONS'
+export type HttpMethod = '' | 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'HEAD' | 'OPTIONS'
 export type ApiType = 'REST' | 'SOAP'
 export type BodyType = 'none' | 'json' | 'xml' | 'form-data' | 'urlencoded' | 'raw' | 'binary'
 export type AuthType = 'none' | 'basic' | 'bearer' | 'apikey' | 'oauth2'
@@ -73,7 +73,7 @@ export function newRequest(partial?: Partial<ApiRequest>): ApiRequest {
   return {
     id: uuidv4(),
     name: 'New Request',
-    method: 'GET',
+    method: '',
     url: '',
     apiType: 'REST',
     params: [],

@@ -12,8 +12,9 @@ import BodyEditor from './BodyEditor'
 import TestEditor from './TestEditor'
 import DatabaseTab from './DatabaseTab'
 
-const HTTP_METHODS: HttpMethod[] = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS']
+const HTTP_METHODS: Exclude<HttpMethod, ''>[] = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS']
 const METHOD_COLORS: Record<HttpMethod, string> = {
+  '': 'text-muted',
   GET: 'text-green-400', POST: 'text-blue-400', PUT: 'text-yellow-400',
   PATCH: 'text-orange-400', DELETE: 'text-red-400', HEAD: 'text-purple-400', OPTIONS: 'text-emerald-400',
 }
@@ -171,6 +172,7 @@ export default function RequestBuilder() {
           value={activeRequest.method}
           onChange={(e) => updateActiveRequest({ method: e.target.value as HttpMethod })}
         >
+          <option value="" className="text-muted">Method</option>
           {HTTP_METHODS.map((m) => (
             <option key={m} value={m} className={METHOD_COLORS[m]}>{m}</option>
           ))}

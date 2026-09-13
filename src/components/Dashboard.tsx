@@ -8,7 +8,7 @@ function MethodBadge({ method }: { method: string }) {
 export default function Dashboard() {
   const {
     collections, requests, environments, history,
-    setView, createCollection, openRequest, openBlankTab,
+    setView, createCollection, openHistoryRequest, openBlankTab,
     setShowImport, setShowEnvManager, setSidebarTab,
   } = useStore()
 
@@ -79,7 +79,7 @@ export default function Dashboard() {
                   <tr
                     key={entry.id}
                     className="border-b border-border/40 hover:bg-bg cursor-pointer"
-                    onClick={() => { openRequest(entry.request.id); setView('workspace') }}
+                    onClick={() => openHistoryRequest(entry.request as import('../types').ApiRequest)}
                   >
                     <td className="py-1.5 pr-4"><MethodBadge method={entry.request.method} /></td>
                     <td className="py-1.5 font-mono truncate max-w-xs text-text">{entry.request.url}</td>
