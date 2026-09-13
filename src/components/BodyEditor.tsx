@@ -6,6 +6,7 @@ import { oneDark } from '@codemirror/theme-one-dark'
 import type { BodyType, KeyValueItem } from '../types'
 import { formatJson, minifyJson } from '../utils/jsonFormatter'
 import { formatXml } from '../utils/jsonFormatter'
+import { generateJsonBody, generateXmlBody } from '../utils/bodyValueGenerator'
 import KeyValueEditor from './KeyValueEditor'
 
 interface Props {
@@ -50,6 +51,11 @@ export default function BodyEditor(props: Props) {
     navigator.clipboard.writeText(text)
   }
 
+  const handleGenerate = () => {
+    if (bodyType === 'json') props.onBodyJsonChange(generateJsonBody(bodyJson))
+    if (bodyType === 'xml') props.onBodyXmlChange(generateXmlBody(bodyXml))
+  }
+
   return (
     <div className="flex flex-col h-full">
       {/* Body type selector */}
@@ -65,6 +71,13 @@ export default function BodyEditor(props: Props) {
         ))}
         {(bodyType === 'json' || bodyType === 'xml') && (
           <div className="ml-auto flex gap-1">
+            <button
+              className="btn btn-ghost text-xs text-accent border border-accent/40 hover:bg-accent/10"
+              onClick={handleGenerate}
+              title="Regenerate all values in the body (keeps structure and field names)"
+            >
+              ⚡ Generate
+            </button>
             <button className="btn btn-ghost text-xs" onClick={handleFormat}>Format</button>
             {bodyType === 'json' && <button className="btn btn-ghost text-xs" onClick={handleMinify}>Minify</button>}
             <button className="btn btn-ghost text-xs" onClick={handleCopy}>Copy</button>
