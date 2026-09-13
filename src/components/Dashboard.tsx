@@ -9,7 +9,7 @@ export default function Dashboard() {
   const {
     collections, requests, environments, history,
     setView, createCollection, openHistoryRequest, openBlankTab,
-    setShowImport, setShowEnvManager, setSidebarTab,
+    setShowImport, setShowEnvManager, setSidebarTab, openRequest,
   } = useStore()
 
   const recent = history.slice(0, 10)
@@ -33,12 +33,12 @@ export default function Dashboard() {
         {/* Stats */}
         <div className="grid grid-cols-4 gap-4">
           {[
-            { label: 'Collections', value: totalCollections, icon: '📁', color: 'text-accent' },
-            { label: 'Saved Requests', value: totalRequests, icon: '📤', color: 'text-info' },
-            { label: 'Environments', value: totalEnvs, icon: '🌍', color: 'text-success' },
-            { label: 'History Entries', value: totalHistory, icon: '🕐', color: 'text-warning' },
+            { label: 'Collections', value: totalCollections, icon: '📁', color: 'text-accent', onClick: () => { setSidebarTab('collections'); setView('workspace') } },
+            { label: 'Saved Requests', value: totalRequests, icon: '📤', color: 'text-info', onClick: () => { setSidebarTab('collections'); setView('workspace') } },
+            { label: 'Environments', value: totalEnvs, icon: '🌍', color: 'text-success', onClick: () => { setSidebarTab('environments'); setView('workspace') } },
+            { label: 'History Entries', value: totalHistory, icon: '🕐', color: 'text-warning', onClick: () => { setSidebarTab('history'); setView('workspace') } },
           ].map((stat) => (
-            <div key={stat.label} className="bg-surface border border-border rounded-lg p-4 flex flex-col gap-1">
+            <div key={stat.label} className="bg-surface border border-border rounded-lg p-4 flex flex-col gap-1 cursor-pointer hover:bg-bg transition-colors" onClick={stat.onClick}>
               <div className="text-2xl">{stat.icon}</div>
               <div className={`text-2xl font-bold ${stat.color}`}>{stat.value}</div>
               <div className="text-muted text-xs">{stat.label}</div>
@@ -115,7 +115,20 @@ export default function Dashboard() {
                   onClick={() => { setSidebarTab('collections'); setView('workspace') }}
                 >
                   <div className="text-text text-xs font-semibold">📁 {col.name}</div>
-                  <div className="text-muted text-xs mt-1">{colRequests.length} requests</div>
+                  <div className="text-muted text-xs mt-1 mb-2">{colRequests.length} requests</div>
+                  {colRequests.slice(0, 3).map((req) => (
+                    <div
+                      key={req.id}
+                      className="flex items-center gap-2 px-2 py-1 rounded hover:bg-surface text-xs cursor-pointer"
+                      onClick={(e) => { e.stopPropagation(); openRequest(req.id) }}
+                    >
+                      <MethodBadge method={req.method} />
+                      <span className="truncate text-muted">{req.name}</span>
+                    </div>
+                  ))}
+                  {colRequests.length > 3 && (
+                    <div className="text-muted text-[10px] px-2 mt-1">+{colRequests.length - 3} more</div>
+                  )}
                 </div>
               )
             })}

@@ -58,8 +58,8 @@ export default function BodyEditor(props: Props) {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Body type selector */}
-      <div className="flex items-center gap-1 px-3 py-2 border-b border-border flex-shrink-0">
+      {/* Body type selector row */}
+      <div className="flex flex-wrap items-center gap-1 px-3 py-2 border-b border-border flex-shrink-0">
         {BODY_TYPES.map((t) => (
           <button
             key={t.id}
@@ -69,22 +69,24 @@ export default function BodyEditor(props: Props) {
             {t.label}
           </button>
         ))}
-        {(bodyType === 'json' || bodyType === 'xml') && (
-          <div className="ml-auto flex gap-1">
-            <button
-              className="btn btn-ghost text-xs text-accent border border-accent/40 hover:bg-accent/10"
-              onClick={handleGenerate}
-              title="Regenerate all values in the body (keeps structure and field names)"
-            >
-              ⚡ Generate
-            </button>
-            <button className="btn btn-ghost text-xs" onClick={handleFormat}>Format</button>
-            {bodyType === 'json' && <button className="btn btn-ghost text-xs" onClick={handleMinify}>Minify</button>}
-            <button className="btn btn-ghost text-xs" onClick={handleCopy}>Copy</button>
-            <button className="btn btn-ghost text-xs" onClick={() => bodyType === 'json' ? props.onBodyJsonChange('') : props.onBodyXmlChange('')}>Clear</button>
-          </div>
-        )}
       </div>
+      {/* Action buttons row — only shown for json/xml */}
+      {(bodyType === 'json' || bodyType === 'xml') && (
+        <div className="flex items-center gap-1 px-3 py-1.5 border-b border-border flex-shrink-0 bg-surface/50">
+          <button
+            className="btn btn-ghost text-xs font-semibold text-accent border border-accent/40 hover:bg-accent/10 px-3"
+            onClick={handleGenerate}
+            title="Regenerate all values in the body (keeps structure and field names)"
+          >
+            ⚡ Generate
+          </button>
+          <div className="w-px h-4 bg-border mx-1" />
+          <button className="btn btn-ghost text-xs" onClick={handleFormat}>Format</button>
+          {bodyType === 'json' && <button className="btn btn-ghost text-xs" onClick={handleMinify}>Minify</button>}
+          <button className="btn btn-ghost text-xs" onClick={handleCopy}>Copy</button>
+          <button className="btn btn-ghost text-xs" onClick={() => bodyType === 'json' ? props.onBodyJsonChange('') : props.onBodyXmlChange('')}>Clear</button>
+        </div>
+      )}
 
       {/* Body editor */}
       <div className="flex-1 overflow-hidden">

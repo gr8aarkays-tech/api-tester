@@ -208,19 +208,22 @@ export const useStore = create<AppState>((set, get) => ({
   },
 
   openHistoryRequest: (req) => {
+    // Ensure the request is always a complete ApiRequest (history entries
+    // are stored as Omit<ApiRequest,'tests'> so tests may be missing)
+    const fullReq: ApiRequest = { ...req, tests: (req as ApiRequest).tests ?? [] }
     const { tabs } = get()
     // Re-use an existing tab if one is already open for this request id
-    const existing = tabs.find((t) => t.requestId === req.id)
+    const existing = tabs.find((t) => t.requestId === fullReq.id)
     if (existing) {
-      set({ activeTabId: existing.id, activeRequest: { ...req }, response: null, view: 'workspace' })
+      set({ activeTabId: existing.id, activeRequest: { ...fullReq }, response: null, view: 'workspace' })
       return
     }
     // Ensure the request is in the in-memory list so the tab can reference it
-    const requests = get().requests.some((r) => r.id === req.id)
+    const requests = get().requests.some((r) => r.id === fullReq.id)
       ? get().requests
-      : [...get().requests, { ...req }]
-    const tab: AppTab = { id: uuidv4(), requestId: req.id, title: req.name || req.method || 'Request', isDirty: false }
-    set({ requests, tabs: [...tabs, tab], activeTabId: tab.id, activeRequest: { ...req }, response: null, view: 'workspace' })
+      : [...get().requests, { ...fullReq }]
+    const tab: AppTab = { id: uuidv4(), requestId: fullReq.id, title: fullReq.name || fullReq.method || 'Request', isDirty: false }
+    set({ requests, tabs: [...tabs, tab], activeTabId: tab.id, activeRequest: { ...fullReq }, response: null, view: 'workspace' })
   },
 
   openRequest: (requestId) => {
